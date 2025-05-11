@@ -50,3 +50,11 @@ def semantic_search(request: QueryRequest):
 def health_check():
     return {"status": "ok"}
 
+
+@app.get("/exact-match", response_model=List[TermResult])
+def exact_match(term: str):
+    matches = data_set[data_set["english"].str.lower() == term.lower()]
+    if matches.empty:
+        raise HTTPException(status_code=404, detail="Term not found")
+    return matches.to_dict(orient="records")
+
