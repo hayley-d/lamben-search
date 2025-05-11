@@ -45,3 +45,8 @@ def semantic_search(request: QueryRequest):
         for i in indices[0]
     ]
     return {"results": results}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
