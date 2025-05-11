@@ -44,3 +44,47 @@ def test_semantic_search_special_characters():
 def test_semantic_search_missing_query_field():
     response = client.post("/semantic-search", json={})
     assert response.status_code == 422
+
+def test_exact_match_found():
+    response = client.get("/exact-match", params={"term": "fire"})
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert any(term["english"].lower() == "fire" for term in data)
+
+def test_exact_match_not_found():
+    response = client.get("/exact-match", params={"term": "blargh"})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Term not found"
+
+def test_get_glossary():
+    response = client.get("/glossary")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 50  # Should contain many entries
+    assert "english" in data[0] and "elvish" in data[0] and "definition" in data[0]
+
+def test_get_term_by_english_found():
+    response = client.get("/term/fire")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["english"].lower() == "fire"
+
+def test_get_term_by_english_not_found():
+    response = client.get("/term/blargh")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Term not found"
+
+def test_get_random_term():
+    response = client.get("/random")
+    assert response.status_code == 200
+    data = response.json()
+    assert "english" in data and "elvish" in data and "definition" in data
+
+def test_get_languages():
+    response = client.get("/languages")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["source"] == "English"
+    assert data["target"] == "Elvish"
