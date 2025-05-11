@@ -73,3 +73,20 @@ def get_term_by_english(english: str):
         "elvish": row["elvish"],
         "definition": row["definition"]
     }
+
+@app.get("/random", response_model=TermResult)
+def get_random_term():
+    row = data_set.sample(1).iloc[0]
+    return {
+        "english": row["english"],
+        "elvish": row["elvish"],
+        "definition": row["definition"]
+    }
+
+@app.get("/languages")
+def get_languages():
+    return {
+        "source": "English",
+        "target": "Elvish",
+        "note": "Future version could support isiZulu, Sesotho, etc."
+    }
