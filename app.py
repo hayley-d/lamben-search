@@ -62,3 +62,14 @@ def exact_match(term: str):
 def get_glossary():
     return data_set.to_dict(orient="records")
 
+@app.get("/term/{english}", response_model=TermResult)
+def get_term_by_english(english: str):
+    match = data_set[data_set["english"].str.lower() == english.lower()]
+    if match.empty:
+        raise HTTPException(status_code=404, detail="Term not found")
+    row = match.iloc[0]
+    return {
+        "english": row["english"],
+        "elvish": row["elvish"],
+        "definition": row["definition"]
+    }
