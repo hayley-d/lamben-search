@@ -1,9 +1,10 @@
+from typing import List
+
+import faiss
+import numpy
+import pandas
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List
-import pandas
-import numpy
-import faiss
 from sentence_transformers import SentenceTransformer
 
 # Load the glossary dataset
@@ -21,30 +22,35 @@ index.add(corpus_embeddings)
 
 app = FastAPI()
 
+
 class QueryRequest(BaseModel):
     query: str
+
 
 class TermResult(BaseModel):
     english: str
     elvish: str
     definition: str
 
-class QueryResponse(BaseModel):
-    results:List[TermResult]
 
-@app.post("/semantic-search",response_model=QueryResponse)
+class QueryResponse(BaseModel):
+    results: List[TermResult]
+
+
+@app.post("/semantic-search", response_model=QueryResponse)
 def semantic_search(request: QueryRequest):
-    query_embedding = model.encode([request.query],convert_to_numpy=True)
+    query_embedding = model.encode([request.query], convert_to_numpy=True)
     distances, indices = index.search(query_embedding, k=5)
     results = [
         {
             "english": data_set.iloc[i]["english"],
             "elvish": data_set.iloc[i]["elvish"],
-            "definition": data_set.iloc[i]["definition"]
+            "definition": data_set.iloc[i]["definition"],
         }
         for i in indices[0]
     ]
     return {"results": results}
+
 
 @app.get("/health")
 def health_check():
@@ -58,9 +64,11 @@ def exact_match(term: str):
         raise HTTPException(status_code=404, detail="Term not found")
     return matches.to_dict(orient="records")
 
+
 @app.get("/glossary", response_model=List[TermResult])
 def get_glossary():
     return data_set.to_dict(orient="records")
+
 
 @app.get("/term/{english}", response_model=TermResult)
 def get_term_by_english(english: str):
@@ -71,8 +79,9 @@ def get_term_by_english(english: str):
     return {
         "english": row["english"],
         "elvish": row["elvish"],
-        "definition": row["definition"]
+        "definition": row["definition"],
     }
+
 
 @app.get("/random", response_model=TermResult)
 def get_random_term():
@@ -80,13 +89,14 @@ def get_random_term():
     return {
         "english": row["english"],
         "elvish": row["elvish"],
-        "definition": row["definition"]
+        "definition": row["definition"],
     }
+
 
 @app.get("/languages")
 def get_languages():
     return {
         "source": "English",
         "target": "Elvish",
-        "note": "Future version could support isiZulu, Sesotho, etc."
+        "note": "Future version could support isiZulu, Sesotho, etc.",
     }
