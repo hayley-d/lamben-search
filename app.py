@@ -58,3 +58,7 @@ def exact_match(term: str):
         raise HTTPException(status_code=404, detail="Term not found")
     return matches.to_dict(orient="records")
 
+@app.get("/glossary", response_model=List[TermResult])
+def get_glossary():
+    return data_set.to_dict(orient="records")
+
